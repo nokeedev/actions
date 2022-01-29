@@ -4,6 +4,10 @@
 
 This repository host several actions to aid Nokee plugin development.
 
+- link:setup-vagrant/README.adoc[setup-vagrant]: Setup vagrant on GitHub agent.
+- link:vagrant-provision/README.adoc[vagrant-provision]: Provision a vagrant image on GitHub agent.
+- link:vagrant-ssh/README.adoc[vagrant-ssh]: Execute command in a vagrant image via SSH.
+
 == License
 
 The scripts and documentation in this project are released under the link:LICENSE[MIT License].
