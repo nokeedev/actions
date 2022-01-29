@@ -1,0 +1,16 @@
+= setup-gradle
+
+This action is an abstraction over the official Gradle action that serves as Gradle setup as recommended by the Gradle team.
+The setup aims only at restoring and saving the various Gradle cache efficently.
+
+== Usage
+
+----
+on: [push]
+jobs:
+  test:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nokeedev/actions/setup-gradle
+----
