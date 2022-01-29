@@ -1,0 +1,89 @@
+description: 'Provision Vagrant box'
+name: Gradle
+inputs:
+    base-directory:
+        description: 'Base directory where box configuration are located, defaults to .github/vagrants'
+        required: false
+        default: '.github/vagrants'
+    name:
+        description: 'Vagrant box name to provision from the base-directory, i.e. ${base-directory}/freebsd-12.3'
+        required: true
+
+    # Consider choosing a value within the hardware resources
+    #   See https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+    mem:
+        description: 'Vagrant box memory setting'
+        required: false
+        default: '2048'
+    cpus:
+        description: 'Vagrant box CPU setting'
+        required: false
+        default: '2'
+
+    # Note that Gradle doesn't well behave on NFS due to lack of file locking capability
+    #   rsync is a good default for the GitHub workspace
+    sync-type:
+        description: 'Vagrant sync type for the GitHub workspace'
+        required: false
+        default: 'rsync'
+runs:
+    using: composite
+    steps:
+        # TODO: We should guard against double provisioning
+        -   name: Cache vagrant box
+            uses: actions/cache@v2
+            id: cache
+            with:
+                path: ${{ inputs.base-directory }}/${{ inputs.name }}.bak/package.box
+                key: ${{ runner.os }}-vagrant-${{ hashFiles(format('{0}/{1}/Vagrantfile', inputs['base-directory'], inputs['name'])) }}
+
+        -   name: Create vagrant box [cache-miss only]
+            if: steps.cache.outputs.cache-hit != 'true'
+            shell: bash
+            run: |
+                vagrant up
+                vagrant package --output ${{ github.workspace }}/${{ inputs.base-directory }}/${{ inputs.name }}.bak/package.box
+            working-directory: ${{ inputs.base-directory }}/${{ inputs.name }}
+
+        # TODO: We should import the machine under a unambiguous name to avoid conflict on machine with multiple self-hosted runner (baremetal)
+        -   name: Import vagrant box
+            shell: bash
+            run: |
+                vagrant box add --force ${{ inputs.name }} package.box
+            working-directory: ${{ inputs.base-directory }}/${{ inputs.name }}.bak
+
+        -   name: Provision vagrant box
+            shell: bash
+            run: |
+                run() {
+                  printf "\033[0;35m==>\033[0m \033[0;32m%b\n\033[0m" "$*"
+                  eval "$*"
+                }
+
+                vagrant init ${{ inputs.name }}
+                echo 'set -e' > shell.sh
+                export -p | grep 'GITHUB_' >> shell.sh
+                cat >> shell.sh <<'EOF'
+                    echo "cd /home/vagrant/${GITHUB_REPOSITORY}" >> /home/vagrant/.cshrc
+                EOF
+
+                cat > Vagrantfile <<EOF
+                    Vagrant.configure("2") do |config|
+                        config.vm.box = "${{ inputs.name }}"
+                        config.vm.provider "virtualbox" do |vb|
+                            vb.memory = "${{ inputs.mem }}"
+                            vb.cpus = "${{ inputs.cpus }}"
+                        end
+                        config.vm.synced_folder "${GITHUB_WORKSPACE}", "/home/vagrant/${GITHUB_REPOSITORY}", type: "${{inputs.sync-type}}",
+                            rsync__exclude: ["package.box", ".idea", ".gradle"],
+                            rsync_args: ["--recursive", "--links", "--times", "--delete", "--compress"],
+                            rsync__verbose: true
+                        config.vm.provision "shell", path: "shell.sh"
+                    end
+                EOF
+
+                run cat Vagrantfile
+                run cat shell.sh
+
+                run vagrant up --provision
+            working-directory: ${{ inputs.base-directory }}/${{ inputs.name }}.bak

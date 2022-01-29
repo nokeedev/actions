@@ -1,0 +1,22 @@
+= vagrant-provision
+
+This action provision a base image using Vagrant for the current workspace.
+The action use the Vagrantfile as the cache key for provisioned box.
+
+== Usage
+
+----
+jobs:
+  test:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nokeedev/actions/setup-vagrant
+      - uses: nokeedev/actions/vagrant-provision
+        with:
+          name: freebsd-12.3
+      - uses: nokeedev/actions/vagrant-ssh
+        with:
+          name: freebsd-12.3
+          run: ./gradlew tasks
+----
