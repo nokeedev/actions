@@ -2,3 +2,6 @@
 
 This repository host several actions to aid Nokee plugin development.
 
+== License
+
+The scripts and documentation in this project are released under the link:LICENSE[MIT License].
