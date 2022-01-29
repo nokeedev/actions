@@ -1,7 +1,18 @@
 = Nokee GitHub actions
+:coc: https://github.com/nokeedev/.github/blob/main/CODE_OF_CONDUCT.md
+:contribute: https://github.com/nokeedev/.github/blob/main/CONTRIBUTING.md
 
 This repository host several actions to aid Nokee plugin development.
 
 == License
 
 The scripts and documentation in this project are released under the link:LICENSE[MIT License].
+
+== Contributions
+
+Contributions are welcome!
+See link:{contribute}[Contributor's Guide].
+
+== Code of Conduct
+
+Be nice. See link:{coc}[our code of conduct].
