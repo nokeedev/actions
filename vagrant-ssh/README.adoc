@@ -1,0 +1,21 @@
+= vagrant-ssh
+
+This action executes a command via SSH into a link:../vagrant-provision/README.adoc[provisioned Vagrant image].
+
+== Usage
+
+----
+jobs:
+  test:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nokeedev/actions/setup-vagrant
+      - uses: nokeedev/actions/vagrant-provision
+        with:
+          name: freebsd-12.3
+      - uses: nokeedev/actions/vagrant-ssh
+        with:
+          name: freebsd-12.3
+          run: ./gradlew tasks
+----

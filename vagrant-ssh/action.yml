@@ -1,0 +1,21 @@
+description: Run Gradle with Nokee cache
+name: Gradle
+inputs:
+    base-directory:
+        description: 'Gradle arguments'
+        required: false
+        default: '.github/vagrants'
+    name:
+        description: 'name'
+        required: true
+    run:
+        description: 'Args'
+        required: true
+runs:
+    using: composite
+    steps:
+        # TODO: We should notify the user if working directory doesn't exists meaning they forgot to provision the machine
+        -   shell: bash
+            run: vagrant ssh -c "${{ inputs.run }}"
+            working-directory: ${{ inputs.base-directory }}/${{ inputs.name }}.bak
+
