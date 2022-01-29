@@ -1,0 +1,58 @@
+= setup-vagrant
+:vagrant-synced-folders-rsync-prerequisites: https://www.vagrantup.com/docs/synced-folders/rsync#prerequisites
+:vagrant-disksize-plugin: https://github.com/sprotheroe/vagrant-disksize
+
+This action set up a vagrant environment for use in actions by:
+
+- link:{disable-vagrant-installation}[optionally] installing Vagrant and VirtualBox
+- link:{disable-rsync-installation}[optionally] installing link:{vagrant-synced-folders-rsync-prerequisites}[rsync to support Vagrant rsync-typed synced folders]
+- link:{disable-vagrant-disksize-plugin-installation}[optionally] installing link:{vagrant-disksize-plugin}[Vagrant disksize plugin]
+
+== Configuration
+
+When using the actions on persistent runner, we may want to disable automatic installation of the required software in favor of the one already installed.
+
+=== How do disable Vagrant/VirtualBox installation?
+
+Vagrant and VirtualBox are already installed on `macos-10.15` but not on `macos-11`.
+
+----
+on: [push]
+jobs:
+  test:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nokeedev/actions/setup-vagrant
+        with:
+          install-vagrant-if: 'false'
+          install-virtualbox-if: 'false'
+----
+
+=== How to disable rsync installation?
+
+----
+on: [push]
+jobs:
+  test:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nokeedev/actions/setup-vagrant
+        with:
+          install-rsync-if: 'false'
+----
+
+=== How to disable Vagrant disksize plugin installation?
+
+----
+on: [push]
+jobs:
+  test:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nokeedev/actions/setup-vagrant
+        with:
+          install-vagrant-disksize-plugin-if: 'false'
+----

@@ -1,0 +1,56 @@
+description: Setup Vagrant on GitHub actions agent (macOS only)
+name: Setup Vagrant
+inputs:
+    install-rsync-if:
+        description: 'Install rsync tool on agent'
+        required: false
+        default: 'true'
+    install-vagrant-if:
+        description: 'Install vagrant on agent'
+        required: false
+        default: 'true'
+    install-virtualbox-if:
+        description: 'Install virtualbox on agent'
+        required: false
+        default: 'true'
+    install-vagrant-disksize-plugin-if:
+        description: 'Install vagrant-disksize plugin on agent'
+        required: false
+        default: 'true'
+
+runs:
+    using: composite
+    steps:
+        # TODO: Fail if not macOS agent
+
+        # Vagrant requires rsync tool when using synced_folder
+        #   See https://www.vagrantup.com/docs/synced-folders/rsync#prerequisites
+        -   name: Install rsync (required for rsync typed synced_folder) [macos-* only]
+            shell: bash
+            run: brew install rsync
+            if: ${{ inputs['install-rsync-if'] == 'true' }}
+
+        # On macos-11, vagrant and virtualbox are not installed
+        #   See https://github.com/actions/virtual-environments/issues/2999#issuecomment-812566316
+        -   name: Install vagrant [macos-11 only]
+            shell: bash
+            run: brew install --cask vagrant
+            if: ${{ inputs['install-vagrant-if'] == 'true' }}
+        -   name: Install virtualbox [macos-11 only]
+            shell: bash
+            run: brew install --cask virtualbox
+            if: ${{ inputs['install-virtualbox-if'] == 'true' }}
+
+        # Disk size plugin seems to work fine with regard to resizing the primary disk
+        #   See https://github.com/sprotheroe/vagrant-disksize
+        #   Alternatively, we could use the experimental disks feature,
+        #     but it requires setting the VAGRANT_EXPERIMENTAL environment variable
+        -   name: Install vagrant-disksize plugin [macos-* only]
+            shell: bash
+            run: vagrant plugin install vagrant-disksize
+            if: ${{ inputs['install-vagrant-disksize-plugin-if'] == 'true' }}
+
+        # TODO: Setup vagrant sudoer for NFS and other sudo
+        #   See https://github.com/gmiroshnykov/vagrant-passwordless-sudo
+
+        # TODO: Maybe patch vagrant, see https://github.com/hashicorp/vagrant/issues/12583#issuecomment-985787134
